@@ -57,7 +57,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Education</h3>
+                <h3 class="card-title">Test 2</h3>
             </div>
             <!-- /.card-header -->
             <div class="card-body">
@@ -70,9 +70,9 @@
 
 
 <script>
-    states = {};
-    zillas = {};
-    bibhags = {};
+    var states = {};
+    var zillas = {};
+    var bibhags = {};
 
         $.ajax({
             method: 'GET',
@@ -86,7 +86,7 @@
         });
         $.ajax({
             method: 'GET',
-            url: '/getBibhags',
+            url: '/sam/getBibhags',
             //                dataType: 'json',
             success: function (response) {
               bibhags = response;
@@ -120,7 +120,7 @@
       .style("opacity", 0);
 
     d3.json("getStates", function (json) {
-    //   console.log('hhhhhhhhhhhhhhhhhhhhhhh:');
+      console.log('hhhhhhhhhhhhhhhhhhhhhhh:');
 
       var maxTotal = d3.max(json.features, function (d) { return d.total });
       console.log('maxTotal:', maxTotal);
