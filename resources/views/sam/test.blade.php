@@ -16,21 +16,21 @@
             <div class="card-header">
                 <h3 class="card-title">Test</h3>
 
-                {{-- {{dd($states);}} --}}
-                <div class="form-group row">
+                {{-- {{dd($divisions);}} --}}
+                <div class="row">
                     <label for="type" class="col-sm-2 col-form-label">Division</label>
-                    <select class="form-control col-sm-10" name="state" id="state">
+                    <select class="form-control col-sm-4" name="division" id="division">
                         <option value="">Please select a division</option>
-                        @foreach($states as $state)
-                            <option value="{{ $state }}"   >
-                                {{ $state }}
+                        @foreach($divisions as $division)
+                            <option value="{{ $division }}"   >
+                                {{ $division }}
                             </option>
                         @endforeach
                     </select>
                 </div>
             </div>
             <!-- /.card-header -->
-            <div class="card-body" id="map" style="background: lightgreen;">
+            <div class="card-body" id="map" style="border: 1px solid;">
 
             </div>
             <!-- /.card-body -->
@@ -40,17 +40,10 @@
 
 
 <script>
-    var states = {};
     var zillas = {};
     var bibhags = {};
-    $.ajax({
-        method: 'GET',
-        url: '/sam/getStates',
-        //                dataType: 'json',
-        success: function (response) {
-            states = JSON.parse(response);
-        }
-    });
+    var populations = @json($populations);
+    // console.log('populations: ', populations);
     $.ajax({
         method: 'GET',
         url: '/sam/getZillas',
@@ -72,7 +65,6 @@
 
     const width = 1000;
     const height = 1000;
-
     var svg = d3.select('.card-body').append('svg')
                     .attr('width',width)
                     .attr('height',height);
@@ -82,18 +74,24 @@
     var path = d3.geoPath(projection);
     var g = svg.append('g');
 
-
-    var div = d3.select("body").append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0);
-
-
+    var buckets = 10,
+    //   colors = ["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58", "#cccc41"];
+      colors = ["LightGreen", "Lime", "LightGoldenRodYellow", "DarkSeaGreen", "DarkGrey", "DimGrey", "Cyan", "CornflowerBlue", "Blue", "DarkBlue"]; 
 
 
     d3.json('getZillas')
         .then(data => {
-            console.log(data);
 
+            zillas.features.forEach(val => {
+                var popu = populations.find(function(e) {
+                    return e.district == val.properties.ADM2_EN;
+                })
+                // console.log('popu: ', popu, val);
+                val.properties = { ...val.properties, ...popu }
+            })
+
+            // console.log('data:', data);
+            console.log('zillas', zillas);
             var center = d3.geoCentroid(data)
             var scale  = 150;
             var offset = [width/2, height/2];
@@ -109,28 +107,28 @@
 
 
             //Bind data and create one path per GeoJSON feature
-            svg.selectAll("path")
-                .data(data.features)
-                .enter()
-                .append("path")
-                .attr("d", path)
-                .style("fill", 'steelblue')
-                .style("stroke", "black" )
-                .attr("class", 'zilla')
-                .text(function(d) {
-                    // console.log(d);
-                    return d.properties.ADM2_EN;
-                })
-                ;
-
+            updatePath(null);
+            // svg.selectAll("path")
+            //     .data(data.features)
+            //     .enter()
+            //     .append("path")
+            //     .attr("d", path)
+            //     .style("fill", 'steelblue')
+            //     .style("stroke", "black" )
+            //     .attr("class", 'zilla')
+            //     .text(function(d) {
+            //         // console.log(d);
+            //         return d.properties.ADM2_EN;
+            //     })
+            //     ;
         });
 
 
     // handle on click event
-    d3.select('[name="state"]')
+    d3.select('[name="division"]')
         .on('change', function() {
             // var newData = eval(d3.select(this).property('value'));
-            var sel = document.getElementById('state');
+            var sel = document.getElementById('division');
             var selectValue = sel.options[sel.selectedIndex].value;
             console.log(selectValue);
             d3.select('.card-header')
@@ -141,7 +139,7 @@
 
 
     function updatePath(selectValue) {
-        console.log('Sssss: ',selectValue, zillas);
+        console.log('updatePath: ',selectValue, zillas);
         d3.selectAll('svg').remove();
         svg = d3.select('.card-body').append('svg')
                         .attr('width',width)
@@ -153,13 +151,16 @@
             .append("path")
             .attr("d", path)
             .style("stroke", "black")
-            // .style("fill", "orange")
             .style("fill", function(d) {
-                console.log(d);
-                if(d.properties.ADM1_EN === selectValue) {
-                    return 'orange';
+                if(selectValue) {
+                    if(d.properties.ADM1_EN === selectValue) {
+                        console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000));
+                        return colors[ Math.floor(d.properties.population / 1000) ];
+                    } else {
+                        return 'white';
+                    }
                 } else {
-                    return 'steelblue';
+                    return colors[ Math.floor(d.properties.population / 1000) ];
                 }
             })
             .attr("class", 'zilla')

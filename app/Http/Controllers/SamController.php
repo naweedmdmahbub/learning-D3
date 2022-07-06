@@ -15,21 +15,21 @@ class SamController extends Controller
 
     public function test()
     {
-        $statesFromJson = Storage::get('zillas.json');
-        $decoded = json_decode($statesFromJson, true);
+        $divisionsFromJson = Storage::get('zillas.json');
+        $decoded = json_decode($divisionsFromJson, true);
         $populations = [];
-        $states = [];
+        $divisions = [];
         foreach($decoded['features'] as $district){
             $obj['state'] =  $district['properties']['ADM1_EN'];
             $obj['district'] =  $district['properties']['ADM2_EN'];
-            $obj['population'] =  rand(1000,5000);
+            $obj['population'] =  rand(1000,10000);
             array_push($populations, $obj);
-            if(!in_array($obj['state'], $states)) {
-                $states[] = $obj['state'];
+            if(!in_array($obj['state'], $divisions)) {
+                $divisions[] = $obj['state'];
             }
         }
-        // dd($populations, $states);
-        return view('sam.test', compact('states', 'populations'));
+        // dd($populations, $divisions);
+        return view('sam.test', compact('divisions', 'populations'));
     }
 
     public function test2()
