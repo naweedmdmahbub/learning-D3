@@ -34,7 +34,20 @@ class SamController extends Controller
 
     public function test2()
     {
-        return view('sam.test2');
+        $divisionsFromJson = Storage::get('zillas.json');
+        $decoded = json_decode($divisionsFromJson, true);
+        $populations = [];
+        $divisions = [];
+        foreach($decoded['features'] as $district){
+            $obj['state'] =  $district['properties']['ADM1_EN'];
+            $obj['district'] =  $district['properties']['ADM2_EN'];
+            $obj['population'] =  rand(1000,10000);
+            array_push($populations, $obj);
+            if(!in_array($obj['state'], $divisions)) {
+                $divisions[] = $obj['state'];
+            }
+        }
+        return view('sam.test2', compact('divisions', 'populations'));
     }
 
     
