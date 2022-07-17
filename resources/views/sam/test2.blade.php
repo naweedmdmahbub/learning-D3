@@ -14,7 +14,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Test</h3>
+                <h3 class="card-title">Test 2</h3>
 
                 {{-- {{dd($divisions);}} --}}
                 <div class="row">
@@ -88,6 +88,17 @@
     var buckets = 10,
     //   colors = ["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58", "#cccc41"];
       colors = ["LightGreen", "Lime", "LightGoldenRodYellow", "DarkSeaGreen", "DarkGrey", "DimGrey", "Cyan", "CornflowerBlue", "Blue", "DarkBlue"]; 
+    // var maxTotal = d3.max(zillas.features, function (d) { return d.total });
+    // var colorScale = d3.scaleQuantile()
+    //   .domain(d3.range(buckets).map(function (d) { return (d / buckets) * maxTotal }))
+    //   .range(colors);
+    // var y = d3.scale.sqrt()
+    //   .domain([0, 10000])
+    //   .range([0,300]);
+    // var yAxis = d3.svg.axis()
+    //     .scale(y)
+    //     .tickValues(colorScale.domain())
+    //     .orient("right");
 
 
     d3.json('getZillas')
@@ -125,7 +136,7 @@
         .on('change', function() {
             var sel = document.getElementById('division');
             selectedDivision = sel.options[sel.selectedIndex].value;
-            console.log(selectedDivision);
+            // console.log(selectedDivision);
             // d3.select('.card-header')
             //     .append('p')
             //     .text(selectedDivision + ' is the last selected option.');
@@ -136,7 +147,7 @@
         .on('change', function() {
             var sel = document.getElementById('population');
             selectedPopulation = sel.options[sel.selectedIndex].value;
-            console.log(selectedPopulation);
+            // console.log(selectedPopulation);
             // d3.select('.card-header')
             //     .append('p')
             //     .text(selectedPopulation + ' is the last selected option.');
@@ -145,7 +156,7 @@
 
 
     function updatePath() {
-        console.log('updatePath: ',selectedDivision, selectedPopulation, zillas);
+        // console.log('updatePath: ',selectedDivision, selectedPopulation, zillas);
         d3.selectAll('svg').remove();
         svg = d3.select('.card-body').append('svg')
                         .attr('width',width)
@@ -158,23 +169,24 @@
             .attr("d", path)
             .style("stroke", "black")
             .style("fill", function(d) {
+                console.log(d.geometry);
                 if(selectedDivision && selectedPopulation/1000) {
                     if(d.properties.ADM1_EN === selectedDivision  && (Math.floor(d.properties.population / 1000) === selectedPopulation/1000)) {
-                        console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000));
+                        // console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000));
                         return colors[ Math.floor(d.properties.population / 1000) ];
                     } else {
                         return 'white';
                     }
                 } else if(selectedDivision) {
                     if(d.properties.ADM1_EN === selectedDivision) {
-                        console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000));
+                        // console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000));
                         return colors[ Math.floor(d.properties.population / 1000) ];
                     } else {
                         return 'white';
                     }
                 } else if(selectedPopulation/1000) {
                   if(Math.floor(d.properties.population / 1000) === selectedPopulation/1000) {
-                      console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000), selectedPopulation, colors[selectedPopulation/1000]);
+                      // console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000), selectedPopulation, colors[selectedPopulation/1000]);
                       return colors[ selectedPopulation / 1000 ];
                       // return colors[ Math.floor(d.properties.population / 1000) ];
                   } else {

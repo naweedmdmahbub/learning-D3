@@ -14,7 +14,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Test</h3>
+                <h3 class="card-title">Test 2</h3>
 
                 {{-- {{dd($divisions);}} --}}
                 <div class="row">
@@ -24,6 +24,15 @@
                         @foreach($divisions as $division)
                             <option value="{{ $division }}"   >
                                 {{ $division }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <label for="type" class="col-sm-2 col-form-label">Population</label>
+                    <select class="form-control col-sm-4" name="population" id="population">
+                        <option value="">Please select population range</option>
+                        @foreach(range(1000, 9000, 1000) as $number)
+                            <option value="{{ $number }}"   >
+                                {{ $number }} - {{ $number+999 }}
                             </option>
                         @endforeach
                     </select>
@@ -43,11 +52,12 @@
     var zillas = {};
     var bibhags = {};
     var populations = @json($populations);
+    var selectedDivision = null;
+    var selectedPopulation = null;
     // console.log('populations: ', populations);
     $.ajax({
         method: 'GET',
         url: '/sam/getZillas',
-        //                dataType: 'json',
         success: function (response) {
             zillas = JSON.parse(response);
             console.log(zillas);
@@ -81,7 +91,6 @@
 
     d3.json('getZillas')
         .then(data => {
-
             zillas.features.forEach(val => {
                 var popu = populations.find(function(e) {
                     return e.district == val.properties.ADM2_EN;
@@ -104,42 +113,39 @@
             projection = d3.geoMercator().center(center)
                                 .scale(scale).translate(offset);
             path = path.projection(projection);
-
+            console.log('path:', path, projection);
 
             //Bind data and create one path per GeoJSON feature
-            updatePath(null);
-            // svg.selectAll("path")
-            //     .data(data.features)
-            //     .enter()
-            //     .append("path")
-            //     .attr("d", path)
-            //     .style("fill", 'steelblue')
-            //     .style("stroke", "black" )
-            //     .attr("class", 'zilla')
-            //     .text(function(d) {
-            //         // console.log(d);
-            //         return d.properties.ADM2_EN;
-            //     })
-            //     ;
+            updatePath();
         });
 
 
     // handle on click event
     d3.select('[name="division"]')
         .on('change', function() {
-            // var newData = eval(d3.select(this).property('value'));
             var sel = document.getElementById('division');
-            var selectValue = sel.options[sel.selectedIndex].value;
-            console.log(selectValue);
-            d3.select('.card-header')
-                .append('p')
-                .text(selectValue + ' is the last selected option.');
-            updatePath(selectValue);
+            selectedDivision = sel.options[sel.selectedIndex].value;
+            console.log(selectedDivision);
+            // d3.select('.card-header')
+            //     .append('p')
+            //     .text(selectedDivision + ' is the last selected option.');
+            updatePath();
+        });
+
+    d3.select('[name="population"]')
+        .on('change', function() {
+            var sel = document.getElementById('population');
+            selectedPopulation = sel.options[sel.selectedIndex].value;
+            console.log(selectedPopulation);
+            // d3.select('.card-header')
+            //     .append('p')
+            //     .text(selectedPopulation + ' is the last selected option.');
+            updatePath();
         });
 
 
-    function updatePath(selectValue) {
-        console.log('updatePath: ',selectValue, zillas);
+    function updatePath() {
+        console.log('updatePath: ',selectedDivision, selectedPopulation, zillas);
         d3.selectAll('svg').remove();
         svg = d3.select('.card-body').append('svg')
                         .attr('width',width)
@@ -152,13 +158,28 @@
             .attr("d", path)
             .style("stroke", "black")
             .style("fill", function(d) {
-                if(selectValue) {
-                    if(d.properties.ADM1_EN === selectValue) {
+                if(selectedDivision && selectedPopulation/1000) {
+                    if(d.properties.ADM1_EN === selectedDivision  && (Math.floor(d.properties.population / 1000) === selectedPopulation/1000)) {
                         console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000));
                         return colors[ Math.floor(d.properties.population / 1000) ];
                     } else {
                         return 'white';
                     }
+                } else if(selectedDivision) {
+                    if(d.properties.ADM1_EN === selectedDivision) {
+                        console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000));
+                        return colors[ Math.floor(d.properties.population / 1000) ];
+                    } else {
+                        return 'white';
+                    }
+                } else if(selectedPopulation/1000) {
+                  if(Math.floor(d.properties.population / 1000) === selectedPopulation/1000) {
+                      console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000), selectedPopulation, colors[selectedPopulation/1000]);
+                      return colors[ selectedPopulation / 1000 ];
+                      // return colors[ Math.floor(d.properties.population / 1000) ];
+                  } else {
+                      return 'white';
+                  }
                 } else {
                     return colors[ Math.floor(d.properties.population / 1000) ];
                 }
