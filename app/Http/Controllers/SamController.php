@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Division;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,6 +18,7 @@ class SamController extends Controller
     {
         $divisionsFromJson = Storage::get('zillas.json');
         $decoded = json_decode($divisionsFromJson, true);
+        // dd($decoded);
         $populations = [];
         $divisions = [];
         foreach($decoded['features'] as $district){
@@ -34,20 +36,59 @@ class SamController extends Controller
 
     public function test2()
     {
-        $divisionsFromJson = Storage::get('zillas.json');
-        $decoded = json_decode($divisionsFromJson, true);
-        $populations = [];
+        $jsonData = Storage::get('zillas.json');
+        // dd($jsonData);
+        $divs = Division::with('districts.geometry.coordinates_collections.coordinates')->get();
+        // dd($divs);
+        $decoded = json_decode($jsonData, true);
         $divisions = [];
-        foreach($decoded['features'] as $district){
-            $obj['state'] =  $district['properties']['ADM1_EN'];
-            $obj['district'] =  $district['properties']['ADM2_EN'];
-            $obj['population'] =  rand(1000,10000);
-            array_push($populations, $obj);
-            if(!in_array($obj['state'], $divisions)) {
-                $divisions[] = $obj['state'];
+        $districts = [];
+        $features = [];
+        $geometry = [];
+        $coordinates_collections = [];
+        $coordinates = [];
+        $i = 0;
+        // dd($divs);
+        foreach($divs as $division){
+            $divisions[] = $division->name;
+            foreach($division->districts as $district){
+                $geometry = [];
+                // dd($district);
+                $coordinates_collections = [];
+                foreach($district->geometry->coordinates_collections as $coordinates_collection){
+                    $coordinates = [];
+                    $single_coordinate_collection = [];
+                    // dd($coordinates_collection);
+                    foreach($coordinates_collection->coordinates as $coordinate){
+                        $single_coordinate = [];
+                        array_push($single_coordinate, $coordinate->longitude);
+                        array_push($single_coordinate, $coordinate->latitude);
+                        array_push($coordinates, $single_coordinate);
+                    }
+                    // dd($coordinates_collections, $coordinates, $single_coordinate);
+                    // $single_coordinate_collection[] = $coordinates;
+                    array_push($single_coordinate_collection, $coordinates);
+                    array_push($coordinates_collections, $single_coordinate_collection);
+                }
+                // dd($coordinates_collections, $coordinates);
+                // $geometry['type'] = $district->geometry->type;
+                $geometry['type'] = ['MultiPolygon'];
+                $geometry['coordinates'] = $coordinates_collections;
+                // dd($geometry);
+                $single_feature['type'] = 'Feature';
+                $single_feature['geometry'] = $geometry;
+                $single_feature['properties']['division_name'] = $division->name;
+                $single_feature['properties']['name'] = $district->name;
+                $single_feature['properties']['population'] = $district->population;
+                $single_feature['id'] = $i++;
+                array_push($features, $single_feature);
             }
         }
-        return view('sam.test2', compact('divisions', 'populations'));
+        $districts['type'] = "FeatureCollection";
+        $districts['features'] = $features;
+        // dd($features);
+        // dd(json_encode($features));
+        return view('sam.test2', compact('divisions', 'districts'));
     }
 
     

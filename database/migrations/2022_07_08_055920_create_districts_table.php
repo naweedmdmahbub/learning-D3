@@ -21,6 +21,7 @@ class CreateDistrictsTable extends Migration
             $table->double('shape_area')->nullable();
             $table->double('shape_length')->nullable();
             $table->string('pcode')->nullable();
+            $table->string('population')->nullable();
         });
     }
 

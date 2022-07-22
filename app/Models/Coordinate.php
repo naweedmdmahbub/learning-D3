@@ -8,4 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Coordinate extends Model
 {
     use HasFactory;
+    public function coordinates_collection(){
+        return $this->belongsTo('App\Models\CoordinatesCollection');
+    }
 }

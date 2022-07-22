@@ -99,12 +99,12 @@
                 val.properties = { ...val.properties, ...popu }
             })
 
-            // console.log('data:', data);
+            console.log('data:', data);
             console.log('zillas', zillas);
-            var center = d3.geoCentroid(data)
+            var center = d3.geoCentroid(zillas)
             var scale  = 150;
             var offset = [width/2, height/2];
-            var bounds  = path.bounds(data);
+            var bounds  = path.bounds(zillas);
             var hscale  = scale*width  / (bounds[1][0] - bounds[0][0]);
             var vscale  = scale*height / (bounds[1][1] - bounds[0][1]);
             var scale   = (hscale < vscale) ? hscale : vscale;
@@ -158,6 +158,7 @@
             .attr("d", path)
             .style("stroke", "black")
             .style("fill", function(d) {
+                console.log(d.geometry);
                 if(selectedDivision && selectedPopulation/1000) {
                     if(d.properties.ADM1_EN === selectedDivision  && (Math.floor(d.properties.population / 1000) === selectedPopulation/1000)) {
                         console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000));

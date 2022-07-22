@@ -51,7 +51,7 @@
 <script>
     var zillas = {};
     var bibhags = {};
-    var populations = @json($populations);
+    var districts = @json($districts);
     var selectedDivision = null;
     var selectedPopulation = null;
     // console.log('populations: ', populations);
@@ -103,20 +103,12 @@
 
     d3.json('getZillas')
         .then(data => {
-            zillas.features.forEach(val => {
-                var popu = populations.find(function(e) {
-                    return e.district == val.properties.ADM2_EN;
-                })
-                // console.log('popu: ', popu, val);
-                val.properties = { ...val.properties, ...popu }
-            })
-
-            // console.log('data:', data);
-            console.log('zillas', zillas);
-            var center = d3.geoCentroid(data)
+            console.log('data:', data);
+            console.log('districts', districts);
+            var center = d3.geoCentroid(districts)
             var scale  = 150;
             var offset = [width/2, height/2];
-            var bounds  = path.bounds(data);
+            var bounds  = path.bounds(districts);
             var hscale  = scale*width  / (bounds[1][0] - bounds[0][0]);
             var vscale  = scale*height / (bounds[1][1] - bounds[0][1]);
             var scale   = (hscale < vscale) ? hscale : vscale;
@@ -125,6 +117,7 @@
             projection = d3.geoMercator().center(center)
                                 .scale(scale).translate(offset);
             path = path.projection(projection);
+            console.log('path:', path);
 
             //Bind data and create one path per GeoJSON feature
             updatePath();
@@ -136,7 +129,7 @@
         .on('change', function() {
             var sel = document.getElementById('division');
             selectedDivision = sel.options[sel.selectedIndex].value;
-            // console.log(selectedDivision);
+            console.log(selectedDivision);
             // d3.select('.card-header')
             //     .append('p')
             //     .text(selectedDivision + ' is the last selected option.');
@@ -156,29 +149,29 @@
 
 
     function updatePath() {
-        // console.log('updatePath: ',selectedDivision, selectedPopulation, zillas);
+        console.log('updatePath: ',selectedDivision, selectedPopulation, districts);
         d3.selectAll('svg').remove();
         svg = d3.select('.card-body').append('svg')
                         .attr('width',width)
                         .attr('height',height);
         
         svg.selectAll("path")
-            .data(zillas.features)
+            .data(districts.features)
             .enter()
             .append("path")
             .attr("d", path)
             .style("stroke", "black")
             .style("fill", function(d) {
-                console.log(d.geometry);
+                console.log(d);
                 if(selectedDivision && selectedPopulation/1000) {
-                    if(d.properties.ADM1_EN === selectedDivision  && (Math.floor(d.properties.population / 1000) === selectedPopulation/1000)) {
+                    if(d.properties.division_name === selectedDivision  && (Math.floor(d.properties.population / 1000) === selectedPopulation/1000)) {
                         // console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000));
                         return colors[ Math.floor(d.properties.population / 1000) ];
                     } else {
                         return 'white';
                     }
                 } else if(selectedDivision) {
-                    if(d.properties.ADM1_EN === selectedDivision) {
+                    if(d.properties.division_name === selectedDivision) {
                         // console.log(d.properties.ADM2_EN, d.properties.population,  Math.floor(d.properties.population / 1000));
                         return colors[ Math.floor(d.properties.population / 1000) ];
                     } else {

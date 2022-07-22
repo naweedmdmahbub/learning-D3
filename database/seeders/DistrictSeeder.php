@@ -28,6 +28,7 @@ class DistrictSeeder extends Seeder
                 'pcode' => $district['properties']['ADM2_PCODE'],
                 'shape_area' => $district['properties']['Shape_Area'],
                 'shape_length' => $district['properties']['Shape_Leng'],
+                'population' =>  rand(1000,10000)
             ]);
         }
     }
